@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: frontend
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend-app
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: backend
+      podSelector:
+        matchLabels:
+          app: backend-app
+    ports:
+    - protocol: TCP
+      port: 80
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns  # For standard clusters use kube-system
+      podSelector:
+        matchLabels:
+          dns.operator.openshift.io/daemonset-dns: default  # For standard clusters use k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 5353  # For standard DNS use 53
+    - protocol: TCP
+      port: 5353  # For standard DNS use 53
